@@ -1,0 +1,109 @@
+<meta charset="UTF-8">
+<img id="screen" />
+<img id="mouse" src="mouse.png" />
+<button  id="fullscreen" onclick="switchFullScreen();" >全屏</button>
+<iframe id="push" src="push.html"></iframe>
+<style type="text/css">
+    body {
+        margin: 0; 
+        padding:0;
+        overflow: hidden;
+    }
+    #mouse { 
+        position: absolute;
+        width: 15px;
+        height: 15px;
+    }
+    #screen {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    #push {
+        display: none;
+    }
+    #fullscreen {
+        background: transparent;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
+</style>
+<script type="text/javascript">
+    
+    // 鼠标
+    function setMouse(x, y) {
+        x = x * scale / 100;
+        y = y * scale / 100;
+        var mouse = document.getElementById('mouse');
+        mouse.style.position='absolute';
+        mouse.style.left = x + 'px';
+        mouse.style.top = y + 'px';
+    }
+    document.getElementById('push').contentWindow.setMouse = setMouse;
+
+    // 屏幕图像
+    function setScreenImage(data) {
+        var screen = document.getElementById('screen');
+        screen.src = "data:image/png;base64," + data;
+    }
+    document.getElementById('push').contentWindow.setScreenImage = setScreenImage;
+
+    // 真实屏幕尺寸
+    var screenWidth = 1;
+    var screenHeight = 1;
+    function setScreenSize(width, height) {
+        screenWidth = width;
+        screenHeight = height;
+        recalculateScale();
+    }
+    document.getElementById('push').contentWindow.setScreenSize = setScreenSize;
+
+    // 计算缩放比例
+    var scale = 1;
+    function recalculateScale() {
+        var scale1 = 100 * document.documentElement.clientHeight / screenHeight;
+        var scale2 = 100 * document.documentElement.clientWidth / screenWidth;
+        if (scale1 > scale2) {
+            scale = scale2;
+        } else {
+            scale = scale1;
+        }
+
+        var screen = document.getElementById('screen');
+        screen.style.width = (screenWidth * scale / 100) + 'px';
+        screen.style.height = (screenHeight * scale  / 100) + 'px';
+    }
+    window.onresize = function(event) {
+        recalculateScale();
+    };
+
+    // 全屏
+    function switchFullScreen() {
+        var el = document.documentElement;
+        var rfs = el.requestFullScreen
+                        || el.webkitRequestFullScreen
+                        || el.mozRequestFullScreen;
+        rfs.call(el);
+    }
+
+    // 显示或隐藏全屏按钮
+    var isFullscreenShowed = true;
+    function updateFullscreenBtn() {
+        if (screen.height != document.documentElement.clientHeight && !isFullscreenShowed) {
+            document.getElementById('fullscreen').style.display = "block";
+            isFullscreenShowed = true;
+        } else if (screen.height == document.documentElement.clientHeight && isFullscreenShowed) {
+            document.getElementById('fullscreen').style.display = "none";
+            isFullscreenShowed = false;
+        }
+
+        setTimeout(updateFullscreenBtn, 1000);
+    }
+    setTimeout(updateFullscreenBtn, 1000);
+
+</script>
+<!--
+TODO: 鼠标图片换一个, 不要中间透明的.
+TODO: 鼠标样式推送显示
+-->
